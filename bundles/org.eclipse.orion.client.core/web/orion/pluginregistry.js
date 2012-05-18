@@ -96,6 +96,7 @@ eclipse.Plugin = function(url, data, internalRegistry) {
 					}
 					
 					if (!_loaded) {
+						internalRegistry.pluginLoading(_self);
 						_loaded = true;
 						_deferredLoad.resolve(_self);
 					}
@@ -338,6 +339,15 @@ eclipse.PluginRegistry = function(serviceRegistry, opt_storage, opt_visible) {
 			},
 			postMessage: function(message, channel) {
 				channel.target.postMessage((channel.useStructuredClone ? message : JSON.stringify(message)), channel.url);
+			},
+			pluginLoading: function(plugin) {
+				try {
+					_pluginEventTarget.dispatchEvent("pluginLoading", plugin);
+				} catch (e) {
+					if (console) {
+						console.log(e);
+					}
+				}
 			}
 	};
 	

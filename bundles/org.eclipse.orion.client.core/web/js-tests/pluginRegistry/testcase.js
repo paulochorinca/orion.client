@@ -11,7 +11,7 @@
 /*global define Worker*/
 
 
-define(["orion/assert", "orion/serviceregistry", "orion/pluginregistry"], function(assert, mServiceregistry, mPluginregistry) {
+define(["orion/assert", "orion/serviceregistry", "orion/pluginregistry", "orion/Deferred"], function(assert, mServiceregistry, mPluginregistry, Deferred) {
 	var tests = {};
 	
 	tests["test empty registry"] = function() {
@@ -179,8 +179,90 @@ define(["orion/assert", "orion/serviceregistry", "orion/pluginregistry"], functi
 		return promise;
 	};
 	
-	
-	
+	tests["test pluginregistry event pluginLoading"] = function() {
+		var storage = {};
+		var serviceRegistry = new mServiceregistry.ServiceRegistry();
+		var pluginRegistry = new mPluginregistry.PluginRegistry(serviceRegistry, storage);
+		
+		assert.equal(pluginRegistry.getPlugins().length, 0);
+		assert.equal(serviceRegistry.getServiceReferences().length, 0);		
+		
+		var promise = new Deferred();
+		pluginRegistry.addEventListener("pluginLoading", function(plugin) {
+			try {
+				assert.ok(!!plugin, "plugin not null");
+				assert.equal(plugin.getData().services.length, 1);
+				assert.equal(plugin.getData().services[0].properties.name, "echotest");
+				promise.resolve();
+			} catch(e) {
+				promise.reject(e);
+			}
+		});
+		pluginRegistry.installPlugin("testPlugin.html").then(function(plugin) {
+			plugin.uninstall();
+			pluginRegistry.shutdown();
+		});
+		return promise;
+	};
+
+	// Test ordering guarantee:
+	// The testOrdering1() service call injected by our pluginLoading listener should call back before the original 
+	// testOrdering2() service call that triggered the listener.
+	tests["test pluginregistry event pluginLoading lazy-load service call ordering"] = function() {
+		var storage = {};
+		var serviceRegistry = new mServiceregistry.ServiceRegistry();
+		var pluginRegistry = new mPluginregistry.PluginRegistry(serviceRegistry, storage);
+
+		assert.equal(pluginRegistry.getPlugins().length, 0);
+		assert.equal(serviceRegistry.getServiceReferences().length, 0);		
+
+		var listenerCalls = 0;
+		pluginRegistry.addEventListener("pluginLoading", function(plugin) {
+			assert.equal(++listenerCalls, 1);
+			// Our pluginLoading handler invokes testOrdering2 method of the plugin that is loading
+			var service = serviceRegistry.getService("testOrdering");
+			service.testOrdering1();
+		});
+		return pluginRegistry.installPlugin("testPlugin2.html").then(function(plugin) {
+			var service = serviceRegistry.getService("testOrdering");
+			// Kicks off the lazy-load process:
+			return service.testOrdering2().then(function() {
+				// At this point both the testOrdering1() (injected) and testOrdering2() should've called back.
+				return service.getCallOrder().then(function(order) {
+					assert.deepEqual(order, ["testOrdering1", "testOrdering2"], "Service method call order is as expected");
+					plugin.uninstall();
+					pluginRegistry.shutdown();
+				});
+			});
+		});
+	};
+
+	tests["test pluginregistry events pluginAdded, pluginRemoved"] = function() {
+		var storage = {};
+		var serviceRegistry = new mServiceregistry.ServiceRegistry();
+		var pluginRegistry = new mPluginregistry.PluginRegistry(serviceRegistry, storage);
+		
+		assert.equal(pluginRegistry.getPlugins().length, 0);
+		assert.equal(serviceRegistry.getServiceReferences().length, 0);		
+		
+		var promise = new Deferred();
+		pluginRegistry.addEventListener("pluginAdded", function(plugin) {
+			try {
+				assert.ok(!!plugin, "plugin not null");
+				assert.equal(plugin.getData().services.length, 1);
+				assert.equal(plugin.getData().services[0].properties.name, "echotest");
+				promise.resolve();
+			} catch(e) {
+				promise.reject(e);
+			}
+		});
+		pluginRegistry.installPlugin("testPlugin.html").then(function(plugin) {
+			plugin.uninstall();
+			pluginRegistry.shutdown();
+		});
+		return promise;
+	};
+
 	tests["test 404 plugin"] = function() {
 		var storage = {};
 		var serviceRegistry = new mServiceregistry.ServiceRegistry();
@@ -199,7 +281,6 @@ define(["orion/assert", "orion/serviceregistry", "orion/pluginregistry"], functi
 		});
 		return promise;
 	};
-	
-	
+
 	return tests;
 });
