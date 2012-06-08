@@ -35,15 +35,15 @@
 				<div class="orion-login-header">Log in</div>
 				<form>
 					<div class="orion-input-holder">
-						<input type="text" class="orion-text-input" name="login" id="login" value="username" onclick='focusUserField(event)' title="Username or email" autocomplete="on"
+						<input type="text" class="orion-text-input" name="login" id="login" placeholder="username" title="Username or email" autocomplete="on"
 							autofocus="true" onkeypress="var event = window.event ? window.event : event ? event : evt; if (event.keyCode === 13){ confirmLogin() } else {return true;}">
 					</div>
 					<div class="orion-input-holder">
-						<input name="password" type="text" id="password" class="orion-text-input" value="password" onfocus='focusPasswordField(event)' title="Password"
+						<input name="password" type="password" id="password" class="orion-text-input" placeholder="password" title="Password"
 							onkeypress="var event = window.event ? window.event : event ? event : evt; if (event.keyCode === 13) { confirmLogin() } else {return true;}">
 					</div>
 					<div class="orion-login-button-holder">
-						<input type="button" name="password" type="password" id="password" class="orion-login-button" onclick='confirmLogin();' value="Sign in" tabindex="0">
+						<input type="button" name="password" id="password" class="orion-login-button" onclick='confirmLogin();' value="Sign in" tabindex="0">
 					</div>
 					<div class="orion-login-forgot-holder" style="display:none;">
 						<a id="resetUserLink" class="orion-forgot-password" style="font-size: 0.85em;" href="javascript:showResetUser();">Forgot password?</a>
@@ -64,14 +64,14 @@
 				<div class="orion-login-header">Create an account</div>
 				<form>
 					<div class="orion-register-input-holder">
-						<input type="text" class="orion-text-input" value="username" title="Username or email" autocomplete="on" onclick='focusUserField(event)' autofocus="autofocus" id="create_login">
+						<input type="text" class="orion-text-input" placeholder="username" title="Username or email" autocomplete="on" autofocus="autofocus" id="create_login">
 					</div>
 					<div class="orion-register-input-holder">
-						<input type="text" class="orion-text-input" value="password" title="password" autocomplete="on" onfocus='focusPasswordField(event)' id="create_password" aria-required="true"
+						<input type="password" class="orion-text-input" placeholder="password" title="password" autocomplete="on" id="create_password" aria-required="true"
 							onkeyup="var event = window.event ? window.event : event ? event : evt; if (event.keyCode === 13) { confirmCreateUser(); } else {validatePassword();}">
 					</div>
 					<div class="orion-register-input-holder">
-						<input type="text" class="orion-text-input" value="retype password" title="retype password" autocomplete="on" onfocus='focusPasswordField(event)' name="passwordRetype" id="create_passwordRetype"
+						<input type="password" class="orion-text-input" placeholder="retype password" title="retype password" autocomplete="on" name="passwordRetype" id="create_passwordRetype"
 							aria-required="true" onkeyup="var event = window.event ? window.event : event ? event : evt; if (event.keyCode === 13) { confirmCreateUser(); } else {validatePassword();}">
 					</div>
 					<div class="orion-login-button-holder">
